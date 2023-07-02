@@ -61,29 +61,27 @@
 
     <div class="w-full bg-white rounded-xl shadow-2xl mt-8 overflow-hidden">
         <h2 class="px-8 pt-8 text-2xl text-blue-800">By account</h2>
-        <div id="chart_by_account" style="height: 400px"></div>
+        <div id="chart_by_account" style="height: 400px">
+            <#-- chart by account display -->
+        </div>
     </div>
 </body>
 
 <script>
-    google.charts.load('current', { packages: ['corechart'] }); google.charts.setOnLoadCallback(() => {
-        drawChartByAccount()
-    });
-    // ...
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(drawChartByAccount);
 
     function drawChartByAccount() {
         const chartData = JSON.parse('${chartDataByAccountJson?no_esc}');
 
-        for (const row of chartData.slice(1)) {
-            row[0] = new Date(row[0])
-        }
+        chartData.forEach((row, i) => {
+            row[0] = i === 0 ? row[0] : new Date(row[0])
+        })
 
         const data = google.visualization.arrayToDataTable(chartData);
         const formatter = new google.visualization.NumberFormat({ fractionDigits: 0 });
 
-        for (let i = 1; i < chartData[0].length; i++) {
-            formatter.format(data, i);
-        }
+        chartData[0].forEach((_, i) => i !== 0 && formatter.format(data, i))
 
         const options = {
             hAxis: { format: 'MMM d, y' }, // Date format
@@ -94,8 +92,10 @@
             // indices, hence the length minus 2 and not minus 1)
             series: { [chartData[0].length - 2]: { type: 'line' } }
         };
-        const chart = new google.visualization.ComboChart( document.getElementById('chart_by_account'));
-        chart.draw(data, options);
+
+        new google.visualization
+            .ComboChart(document.getElementById('chart_by_account'))
+            .draw(data, options);
     }
 </script>
 
